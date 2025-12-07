@@ -63,12 +63,16 @@ state.map={
                 if #tile.units > 0 then
                    tile.units[selected_unit].is_selected=true
                 end
+            else
+                current_state=state.unit_details
+                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+                current_state:init(tile.units[selected_unit])
             end
         end
 
         if camera_focused then
-            camera_dest.x = (selected_terrain.x * 32)-8
-            camera_dest.y = (selected_terrain.y * 32)-8
+            camera_dest.x = (selected_terrain.x * 32)-4
+            camera_dest.y = (selected_terrain.y * 32)-4
         else
             camera_dest.x = 0
             camera_dest.y = 0
@@ -200,6 +204,7 @@ function setup_test_mission()
     end
 
     -- set starting units
-    add(terrain_deck[0][3].units, make_unit("A1", "-1", "short"))
-    add(terrain_deck[0][3].units, make_unit("A2", "-1", "short"))
+    terrain_deck[0][3].units = {}
+    add(terrain_deck[0][3].units, make_unit("dudeguy 1", "-1", "short"))
+    add(terrain_deck[0][3].units, make_unit("dudeguy 2", "-1", "short"))
 end

@@ -1,0 +1,68 @@
+A1
+A2
+selected unit: 2
+selected unit: A2
+A1
+A2
+selected unit: 2
+selected unit: A2
+A1
+A2
+selected unit: 2
+selected unit: A2
+A1
+A2
+selected unit: 2
+selected unit: A2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 1
+selected unit: dudeguy 1
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 1
+selected unit: dudeguy 1
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 1
+selected unit: dudeguy 1
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 2
+selected unit: dudeguy 2
+dudeguy 1
+dudeguy 2
+selected unit: 1
+selected unit: dudeguy 1
