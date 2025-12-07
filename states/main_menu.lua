@@ -1,41 +1,93 @@
-    
 particles={}
 max_particles=32
 ship_particles={}
 max_ship_particles=64
 
 state.main_menu={
-    init=function()
+
+    start_game=false,
+    start_timer=0,
+
+    init=function(self)
         for i=1,max_particles do
             add_menu_particle()
         end
         for i=1,max_ship_particles do
             add_ship_particle()
         end
+        music(0)
     end,
 
-    update=function()
+    update=function(self)
         if btnp(❎) then
-            current_state=state.map
-            current_state.init()
+            self.start_game = true
         end
+
+        if self.start_game then
+            self.start_timer +=1
+            if self.start_timer >60 then
+                current_state=state.map
+                current_state:init()
+                self.start_game=false
+                self.start_timer=0
+            end
+        end
+
         update_menu_particles()
         update_ship_particles()
     end,
 
-    draw=function()
+    draw=function(self)
         cls(0)
         camera()
         draw_menu_particles()
-        print_c("\f7\^w\^t\^o5ffshattered orbit", 64,40,2)
-        print_c("press x to start", 64, 52, 2)
-        print("BY SQUIZM", 2, 122, 2)
 
-       spr(1, 60, 60) -- Planet
-       sspr(16, 0, 8, 8, 48 + sin(time()*0.5)*1.5, 70 + cos(time()*0.5)*1.5, 32, 32) 
-       
-        draw_ship_particles()
-        
+        -- center for the planet
+        local cx, cy = 64, 64
+        local base_size = 8
+
+        if not self.start_game then
+            local dw = base_size
+            local dh = base_size
+            -- sprite 1 is at (8,0) in the sprite sheet (32x32)
+            palt(0,false)
+            palt(14, true)
+            sspr(24, 0, 32, 32, cx - dw/2, cy - dh/2, dw, dh)
+            palt()
+
+            print_c("\f7\^w\^t\^o5ffshattered orbit", 64,16,2)
+            print_c("press x to start", 64, 32, 7)
+            -- draw ship
+            sspr(16, 0, 8, 8, 48 + sin(time()*0.5)*1.5, 70 + cos(time()*0.5)*1.5, 32, 32) 
+            draw_ship_particles()        
+            
+            print("BY SQUIZM", 2, 122, 5)
+        else
+            -- grow planet centered over time (self.start_timer)
+            local t = mid(0, self.start_timer/60, 1) -- 0..1 over 60 frames
+            local max_size = 128
+            -- ease (optional): smoothstep like ease-in-out
+            local ease = t * t * (3 - 2 * t)
+            local size = base_size + (max_size - base_size) * ease
+            palt(0,false)
+            palt(14, true)
+            sspr(24, 0, 32, 32, cx - size/2, cy - size/2, size, size)
+            palt()
+
+            -- draw ship
+            sspr(16, 0, 8, 8, 48 + sin(time()*0.5)*1.5, 70 + cos(time()*0.5)*1.5, 32, 32) 
+            draw_ship_particles()        
+            
+            print("BY SQUIZM", 2, 122, 5) 
+    
+
+            poke(0x5f34,0x2)
+            t = mid(0, self.start_timer/60, 1)
+            local rad = 128 * (1 - t)
+            if rad > 1 then
+	            circfill(64,64,rad,0|0x1800)
+            end
+        end
     end
 }
 

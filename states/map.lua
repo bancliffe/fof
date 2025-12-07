@@ -1,7 +1,10 @@
 state.map={
+
     init=function()
+        music(-1)
         terrain_deck = {}
         selected_terrain={x=0, y=0} 
+        selected_unit=1 -- default to the first unit in the tile
         setup_test_mission()
 
         show_los = false
@@ -20,10 +23,24 @@ state.map={
     end,
 
     update=function()
-        if btnp(⬅️) then selected_terrain.x = (selected_terrain.x - 1) % 4 end
-        if btnp(➡️) then selected_terrain.x = (selected_terrain.x + 1) % 4 end
-        if btnp(⬆️) then selected_terrain.y = (selected_terrain.y - 1) % 4 end
-        if btnp(⬇️) then selected_terrain.y = (selected_terrain.y + 1) % 4 end
+        if not camera_focused then
+            if btnp(⬅️) then selected_terrain.x = (selected_terrain.x - 1) % 4 end
+            if btnp(➡️) then selected_terrain.x = (selected_terrain.x + 1) % 4 end
+            if btnp(⬆️) then selected_terrain.y = (selected_terrain.y - 1) % 4 end
+            if btnp(⬇️) then selected_terrain.y = (selected_terrain.y + 1) % 4 end
+        else
+            if btnp(⬅️) or btnp(⬆️) then 
+                selected_unit -= 1 
+                if selected_unit < 1 then selected_unit = #terrain_deck[selected_terrain.x][selected_terrain.y].units end
+            end
+            if btnp(➡️) or btnp(⬇️) then 
+                selected_unit += 1 
+                if selected_unit > #terrain_deck[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
+            end
+            for i=1, #terrain_deck[selected_terrain.x][selected_terrain.y].units do
+                terrain_deck[selected_terrain.x][selected_terrain.y].units[i].is_selected = (i == selected_unit)
+            end
+        end
 
         if btnp(🅾️) then 
             if not camera_focused then
@@ -31,15 +48,27 @@ state.map={
                 current_state.init()
             else
                 camera_focused = false
+                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+                if #tile.units >0 then
+                    terrain_deck[selected_terrain.x][selected_terrain.y].units[selected_unit].is_selected = false
+                    selected_unit = 1
+                end
             end
+            selected_unit = 1
         end
         if btnp(❎) then 
-            camera_focused = not camera_focused
+            if not camera_focused then
+                camera_focused = true
+                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+                if #tile.units > 0 then
+                   tile.units[selected_unit].is_selected=true
+                end
+            end
         end
 
         if camera_focused then
-            camera_dest.x = (selected_terrain.x * 32) - 48
-            camera_dest.y = (selected_terrain.y * 32) - 48
+            camera_dest.x = (selected_terrain.x * 32)-8
+            camera_dest.y = (selected_terrain.y * 32)-8
         else
             camera_dest.x = 0
             camera_dest.y = 0
@@ -49,7 +78,6 @@ state.map={
     end,
 
     draw=function()
-        -- Draw game elements
         cls()
         camera(cam.x, cam.y)
 
@@ -170,4 +198,8 @@ function setup_test_mission()
             terrain_deck[i][j].potential_contact=contacts[j+1]
         end
     end
+
+    -- set starting units
+    add(terrain_deck[0][3].units, make_unit("A1", "-1", "short"))
+    add(terrain_deck[0][3].units, make_unit("A2", "-1", "short"))
 end

@@ -1,5 +1,6 @@
 function make_terrain_card(name, defence, cover_type, cover_locations, los)
     local card={}
+    card.units={}
     card.name = name or "field"
     card.defence = defence or rnd({1,1,1,1,1,1,1,2,2,3})
     card.is_staging_area = false
@@ -43,8 +44,12 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
             if self.potential_contact then
                 print("\#1"..self.potential_contact, x+3, y+24,7)
             end
-        end             
+        end
+        
+        -- Draw units
+        for i=1, #self.units do
+            self.units[i]:draw(x+4, y+8*i)
+        end
     end
-    card.units={}
     return card
 end
