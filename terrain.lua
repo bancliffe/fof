@@ -45,5 +45,6 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
             end
         end             
     end
+    card.units={}
     return card
 end
