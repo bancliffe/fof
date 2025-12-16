@@ -23,17 +23,18 @@ state.map={
     end,
 
     update=function()
+        input:update()
         if not camera_focused then
-            if btnp(⬅️) then selected_terrain.x = (selected_terrain.x - 1) % 4 end
-            if btnp(➡️) then selected_terrain.x = (selected_terrain.x + 1) % 4 end
-            if btnp(⬆️) then selected_terrain.y = (selected_terrain.y - 1) % 4 end
-            if btnp(⬇️) then selected_terrain.y = (selected_terrain.y + 1) % 4 end
+            if input.LEFT then selected_terrain.x = (selected_terrain.x - 1) % 4 end
+            if input.RIGHT then selected_terrain.x = (selected_terrain.x + 1) % 4 end
+            if input.UP then selected_terrain.y = (selected_terrain.y - 1) % 4 end
+            if input.DOWN then selected_terrain.y = (selected_terrain.y + 1) % 4 end
         else
-            if btnp(⬅️) or btnp(⬆️) then 
+            if input.LEFT or input.UP then 
                 selected_unit -= 1 
                 if selected_unit < 1 then selected_unit = #terrain_deck[selected_terrain.x][selected_terrain.y].units end
             end
-            if btnp(➡️) or btnp(⬇️) then 
+            if input.RIGHT or input.DOWN then 
                 selected_unit += 1 
                 if selected_unit > #terrain_deck[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
             end
@@ -42,7 +43,7 @@ state.map={
             end
         end
 
-        if btnp(🅾️) then 
+        if input.O then 
             if not camera_focused then
                 current_state=state.main_menu
                 current_state.init()
@@ -56,7 +57,7 @@ state.map={
             end
             selected_unit = 1
         end
-        if btnp(❎) then 
+        if input.X then 
             if not camera_focused then
                 camera_focused = true
                 local tile = terrain_deck[selected_terrain.x][selected_terrain.y]

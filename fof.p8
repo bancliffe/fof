@@ -5,9 +5,12 @@ __lua__
 #include states\main_menu.lua
 #include states\map.lua
 #include states\unit_details.lua
+#include states\input.lua
+#include logger.lua
 #include terrain.lua
 #include unit.lua
 #include utils.lua
+
 __gfx__
 00000000e04440ee00000000eeeeeeeee00011111111000eeeeeeeee000000000000000000000000000000000000000000000000000000000000000000000000
 00000000e04f0eee00000000eeeeeee001111777777111100eeeeeee000000000000000000000000000000000000000000000000000000000000000000000000

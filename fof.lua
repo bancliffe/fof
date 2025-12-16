@@ -4,6 +4,7 @@ current_state=nil
 function _init()
     current_state=state.main_menu
     current_state:init()
+    logger.init()
 end
 
 function _update()
