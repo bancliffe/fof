@@ -4,7 +4,6 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
     card.name = name or "field"
     card.defence = defence or rnd({1,1,1,1,1,1,1,2,2,3})
     card.is_staging_area = false
-    card.potential_contact = nil
     card.cover_type = cover_type or "soft"
     card.cover_locations = cover_locations or 2
     card.los = los or rnd({
@@ -41,14 +40,11 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
         else
             rectfill(x+1, y+1, x+30, y+30, 0)
             print("\#6"..self.defence, x+26, y+3,0)
-            if self.potential_contact then
-                print("\#1"..self.potential_contact, x+3, y+24,7)
-            end
         end
         
         -- Draw units
         for i=1, #self.units do
-            self.units[i]:draw(x+4, y+8*i)
+            self.units[i]:draw(x+3, y+3 + 10*(i-1))
         end
     end
     return card

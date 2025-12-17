@@ -1,6 +1,8 @@
 state.map={
 
-    init=function()
+    popups={},
+
+    init=function(self)
         music(-1)
         terrain_deck = {}
         selected_terrain={x=0, y=0} 
@@ -22,8 +24,17 @@ state.map={
         )
     end,
 
-    update=function()
+    update=function(self)
         input:update()
+        if #self.popups > 0 then
+            local popup = self.popups[#self.popups]
+            popup:update()
+            if not popup.visible then
+                del(self.popups, popup)
+            end
+            return
+        end
+
         if not camera_focused then
             if input.LEFT then selected_terrain.x = (selected_terrain.x - 1) % 4 end
             if input.RIGHT then selected_terrain.x = (selected_terrain.x + 1) % 4 end
@@ -45,8 +56,8 @@ state.map={
 
         if input.O then 
             if not camera_focused then
-                current_state=state.main_menu
-                current_state.init()
+                local popup = make_popup("return to main menu?", 2, 2, 124, 36, true)
+                add(self.popups, popup)
             else
                 camera_focused = false
                 local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
@@ -57,18 +68,25 @@ state.map={
             end
             selected_unit = 1
         end
+
         if input.X then 
-            if not camera_focused then
+            if not camera_focused and #self.popups == 0 then
                 camera_focused = true
                 local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
                 if #tile.units > 0 then
                    tile.units[selected_unit].is_selected=true
                 end
             else
-                current_state=state.unit_details
-                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
-                current_state:init(tile.units[selected_unit])
+                popup = make_popup("view tile contents", 2, 2, 124, 124, true)
+                popup.update = popup_update_view_tile_contents
+                popup.draw = popup_draw_view_tile_contents
+                add(self.popups, popup)
             end
+        end
+
+        if input.L1 then
+            show_los = not show_los
+            menuitem(nil, "show los: "..(show_los and "ON" or "OFF"))
         end
 
         if camera_focused then
@@ -79,10 +97,12 @@ state.map={
             camera_dest.y = 0
         end
         cam.x=lerp(cam.x,camera_dest.x,0.25)
-        cam.y=lerp(cam.y,camera_dest.y,0.25)           
+        cam.y=lerp(cam.y,camera_dest.y,0.25)   
+        if cam.x > 0 and cam.x < 0.1 or cam.x < 0 and cam.x > -0.1 then cam.x=0 end
+        if cam.y > 0 and cam.y < 0.1 or cam.y < 0 and cam.y > -0.1 then cam.y=0 end        
     end,
 
-    draw=function()
+    draw=function(self)
         cls()
         camera(cam.x, cam.y)
 
@@ -95,6 +115,11 @@ state.map={
             draw_los_lines()
         end
         rect(selected_terrain.x * 32 + 1, selected_terrain.y * 32 + 1, selected_terrain.x * 32 + 30, selected_terrain.y * 32 + 30, 7)
+
+        -- Draw popup if visible
+        if #self.popups > 0 then
+            self.popups[#self.popups]:draw()
+        end
     end
 }
 
@@ -199,13 +224,52 @@ function setup_test_mission()
     -- set potential contact
     contacts={"c","b","a"}
     for i=0,3 do
-        for j=0,3 do
-            terrain_deck[i][j].potential_contact=contacts[j+1]
+        for j=0,2 do
+            add(terrain_deck[i][j].units,make_unit(contacts[j+1],"potential contact "..contacts[j+1], "-1", "short",3,1))
         end
     end
 
-    -- set starting units
-    terrain_deck[0][3].units = {}
-    add(terrain_deck[0][3].units, make_unit("dudeguy 1", "-1", "short"))
-    add(terrain_deck[0][3].units, make_unit("dudeguy 2", "-1", "short"))
+    -- set starting player units    
+    add(terrain_deck[0][3].units, make_unit("a1","soldier a1", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("a2","soldier a2", "-1", "short",3,0))
+end
+
+function popup_update_view_tile_contents(self)
+    if input.O then
+        self.visible = false
+    end
+    self.tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+    if input.LEFT or input.UP then 
+        selected_unit -= 1 
+        if selected_unit < 1 then selected_unit = #self.tile.units end
+    end
+    if input.RIGHT or input.DOWN then
+        selected_unit += 1
+        if selected_unit > #self.tile.units then selected_unit = 1 end
+    end
+    if #self.tile.units > 0 then
+        for i=1, #self.tile.units do
+            self.tile.units[i].is_selected = (i == selected_unit)
+        end
+    end
+end
+
+function popup_draw_view_tile_contents(self)
+    camera()
+    for i=0, 64 do
+        line(0, i*2, 127, i*2, 0)
+    end
+    rectfill(10, 10, 118, 118, 0)
+    rect(10, 10, 118, 118, 7)
+    if self.tile then
+        print_c("tile contents:", 64, 12, 7)
+        if #self.tile.units == 0 then
+            print("No units present.", 20, 40, 7)
+        else
+            for i=1, #self.tile.units do
+                local unit = self.tile.units[i]
+                print(unit.name, 14, 20 + (i * 12), unit.is_selected and 11 or 7)
+            end
+        end
+    end
 end

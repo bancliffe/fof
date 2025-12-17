@@ -1,6 +1,6 @@
 logger={
     init=function()
-        printh(get_local_time()..":\tlog started","log.txt", true)
+        printh(get_local_time()..":\tLog started","log.txt", true)
     end,
     log=function(msg)
         printh(get_local_time()..":\t"..msg, "log.txt", false)
