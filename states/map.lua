@@ -1,6 +1,7 @@
 state.map={
 
     popups={},
+    selected_unit=1,
 
     init=function(self)
         music(-1)
@@ -77,10 +78,10 @@ state.map={
                    tile.units[selected_unit].is_selected=true
                 end
             else
-                popup = make_popup("view tile contents", 2, 2, 124, 124, true)
-                popup.update = popup_update_view_tile_contents
-                popup.draw = popup_draw_view_tile_contents
-                add(self.popups, popup)
+                popup_tile_contents = make_popup("view tile contents", 2, 2, 124, 124, true)
+                popup_tile_contents.update = popup_update_view_tile_contents
+                popup_tile_contents.draw = popup_draw_view_tile_contents
+                add(self.popups, popup_tile_contents)
             end
         end
 
@@ -105,7 +106,6 @@ state.map={
     draw=function(self)
         cls()
         camera(cam.x, cam.y)
-
         for i=0,3 do
             for j=0,3 do
                 terrain_deck[i][j]:draw(32 * (i), 32 * (j))
@@ -120,6 +120,10 @@ state.map={
         if #self.popups > 0 then
             self.popups[#self.popups]:draw()
         end
+    end,
+
+    add_popup=function(self, popup)
+        add(self.popups, popup)
     end
 }
 
@@ -240,25 +244,32 @@ function popup_update_view_tile_contents(self)
     end
     self.tile = terrain_deck[selected_terrain.x][selected_terrain.y]
     if input.LEFT or input.UP then 
-        selected_unit -= 1 
-        if selected_unit < 1 then selected_unit = #self.tile.units end
+        state.map.selected_unit -= 1 
+        if state.map.selected_unit < 1 then state.map.selected_unit = #self.tile.units end
     end
     if input.RIGHT or input.DOWN then
-        selected_unit += 1
-        if selected_unit > #self.tile.units then selected_unit = 1 end
+        state.map.selected_unit += 1
+        if state.map.selected_unit > #self.tile.units then state.map.selected_unit = 1 end
     end
     if #self.tile.units > 0 then
         for i=1, #self.tile.units do
-            self.tile.units[i].is_selected = (i == selected_unit)
+            self.tile.units[i].is_selected = (i == state.map.selected_unit)
         end
+    end
+    if input.X then
+
+        view_unit_popup = make_popup("view unit details", 16, 16, 112, 112, true)
+        view_unit_popup.update = popup_update_view_unit_details
+        view_unit_popup.draw = popup_draw_view_unit_details
+        state.map:add_popup(view_unit_popup)
+        logger.log("viewing unit details for unit: "..self.tile.units[state.map.selected_unit].name)
+        logger.log("total popups: "..#state.map.popups)
     end
 end
 
 function popup_draw_view_tile_contents(self)
     camera()
-    for i=0, 64 do
-        line(0, i*2, 127, i*2, 0)
-    end
+    obscure_behind()
     rectfill(10, 10, 118, 118, 0)
     rect(10, 10, 118, 118, 7)
     if self.tile then
@@ -271,5 +282,26 @@ function popup_draw_view_tile_contents(self)
                 print(unit.name, 14, 20 + (i * 12), unit.is_selected and 11 or 7)
             end
         end
+    end
+end
+
+function popup_update_view_unit_details(self)
+    if input.O then
+        self.visible = false
+    end
+end
+
+function popup_draw_view_unit_details(self)
+    camera()
+    obscure_behind()
+    rectfill(16, 16, 112, 112, 0)
+    rect(16, 16, 112, 112, 7)
+    if #terrain_deck[selected_terrain.x][selected_terrain.y].units > 0 then
+        local unit = terrain_deck[selected_terrain.x][selected_terrain.y].units[state.map.selected_unit]
+        print_c("unit details:", 64, 28, 7)
+        print("name: "..unit.name, 20, 52, 7)
+        print("vof: "..unit.vof, 20, 64, 7)
+        print("range: "..unit.range, 20, 76, 7)
+        print("health: "..unit.health, 20, 88, 7)
     end
 end

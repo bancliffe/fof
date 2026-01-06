@@ -9,10 +9,10 @@ function make_unit(icon_text, name, vof, range, health, faction)
     unit.special_abilities = {}
     unit.is_selected = false
     unit.draw = function(self, x, y)
-        rectfill(x,y,x+8,y+6, unit.faction == 0 and 3 or 8)
+        rectfill(x,y,x+(#self.icon_text*4),y+6, unit.faction == 0 and 3 or 8)
         print(self.icon_text, x+1, y+1, 7)
         if self.is_selected then
-            rect(x-1,y-1,x+9,y+7,7)
+            rect(x-1,y-1,x+(#self.icon_text*4)+1,y+7,7)
         end
     end
     return unit

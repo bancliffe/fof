@@ -32,3 +32,9 @@ function make_popup(text, x, y, w, h, isvisible)
         end    
     }
 end
+
+function obscure_behind()
+    for i=0, 64 do
+        line(0, i*2, 127, i*2, 0)
+    end
+end
