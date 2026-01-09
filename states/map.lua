@@ -135,6 +135,20 @@ function draw_los_lines()
     end
 end
 
+function update_terrain_revealed()
+    local directons ={"NE","N","NW"}
+    for i=0,3 do
+        for d in all(directons) do
+            local endx, endy = get_los_from_tile(i, 3, d)
+            for j=i, endx do
+                for k=0, 3-endy do
+                    terrain_deck[j][3-k].revealed = true
+                end
+            end
+        end
+    end
+end
+
 function get_los_from_tile(start_x, start_y, direction)
     local tile = terrain_deck[start_x][start_y]
     if direction == "NW" then
@@ -222,8 +236,13 @@ function setup_test_mission()
     -- set staging area
     for i=0,3 do
         terrain_deck[i][3].is_staging_area = true
+        terrain_deck[i][3].revealed = true
         terrain_deck[i][3].los= '000000000'
     end
+    for i=0,3 do
+        terrain_deck[i][2].revealed = true
+    end
+    update_terrain_revealed()
 
     -- set potential contact
     contacts={"c","b","a"}
@@ -234,8 +253,8 @@ function setup_test_mission()
     end
 
     -- set starting player units    
-    add(terrain_deck[0][3].units, make_unit("a1","soldier a1", "-1", "short",3,0))
-    add(terrain_deck[0][3].units, make_unit("a2","soldier a2", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("s1","squad a1", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("s2","squad a2", "-1", "short",3,0))
 end
 
 function popup_update_view_tile_contents(self)

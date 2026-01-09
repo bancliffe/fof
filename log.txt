@@ -1,15 +1,1 @@
-2026-1-6 10:33:22:	Log started
-2026-1-6 10:33:27:	viewing unit details for unit: soldier a1
-2026-1-6 10:33:27:	total popups: 2
-2026-1-6 10:33:28:	viewing unit details for unit: soldier a2
-2026-1-6 10:33:28:	total popups: 2
-2026-1-6 10:33:30:	viewing unit details for unit: soldier a1
-2026-1-6 10:33:30:	total popups: 2
-2026-1-6 10:33:33:	viewing unit details for unit: soldier a2
-2026-1-6 10:33:33:	total popups: 2
-2026-1-6 10:33:34:	viewing unit details for unit: soldier a1
-2026-1-6 10:33:34:	total popups: 2
-2026-1-6 10:33:42:	viewing unit details for unit: soldier a2
-2026-1-6 10:33:42:	total popups: 2
-2026-1-6 10:33:50:	viewing unit details for unit: potential contact a
-2026-1-6 10:33:50:	total popups: 2
+2026-1-9 15:27:55:	Log started
