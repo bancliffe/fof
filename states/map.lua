@@ -4,7 +4,8 @@ state.map={
     init=function(self)
         music(-1)
         selected_terrain={x=0, y=0} 
-        terrain_deck = {}
+        game_map = {}
+        terrain_cards = {}
         selected_unit=1
         setup_test_mission()
 
@@ -42,14 +43,14 @@ state.map={
         else
             if input.LEFT or input.UP then 
                 selected_unit -= 1 
-                if selected_unit < 1 then selected_unit = #terrain_deck[selected_terrain.x][selected_terrain.y].units end
+                if selected_unit < 1 then selected_unit = #game_map[selected_terrain.x][selected_terrain.y].units end
             end
             if input.RIGHT or input.DOWN then 
                 selected_unit += 1 
-                if selected_unit > #terrain_deck[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
+                if selected_unit > #game_map[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
             end
-            for i=1, #terrain_deck[selected_terrain.x][selected_terrain.y].units do
-                terrain_deck[selected_terrain.x][selected_terrain.y].units[i].is_selected = (i == selected_unit)
+            for i=1, #game_map[selected_terrain.x][selected_terrain.y].units do
+                game_map[selected_terrain.x][selected_terrain.y].units[i].is_selected = (i == selected_unit)
             end
         end
 
@@ -59,9 +60,9 @@ state.map={
                 add(self.popups, popup)
             else
                 camera_focused = false
-                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+                local tile = game_map[selected_terrain.x][selected_terrain.y]
                 if #tile.units >0 then
-                    terrain_deck[selected_terrain.x][selected_terrain.y].units[selected_unit].is_selected = false
+                    game_map[selected_terrain.x][selected_terrain.y].units[selected_unit].is_selected = false
                     selected_unit = 1
                 end
             end
@@ -71,7 +72,7 @@ state.map={
         if input.X then 
             if not camera_focused and #self.popups == 0 then
                 camera_focused = true
-                local tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+                local tile = game_map[selected_terrain.x][selected_terrain.y]
                 if #tile.units > 0 then
                    tile.units[selected_unit].is_selected=true
                 end
@@ -106,7 +107,7 @@ state.map={
         camera(cam.x, cam.y)
         for i=0,3 do
             for j=0,3 do
-                terrain_deck[i][j]:draw(32 *i, 32 * j)
+                game_map[i][j]:draw(32 *i, 32 * j)
             end
         end
         if show_los then
@@ -140,7 +141,7 @@ function update_terrain_revealed()
             local endx, endy = get_los_from_tile(i, 3, d)
             for j=i, endx do
                 for k=0, 3-endy do
-                    terrain_deck[j][3-k].revealed = true
+                    game_map[j][3-k].revealed = true
                 end
             end
         end
@@ -148,12 +149,12 @@ function update_terrain_revealed()
 end
 
 function get_los_from_tile(start_x, start_y, direction)
-    local tile = terrain_deck[start_x][start_y]
+    local tile = game_map[start_x][start_y]
     if direction == "NW" then
         if start_x==0 or start_y==0 then
             return start_x, start_y
         end
-        if terrain_deck[start_x-1][start_y-1].los[1] == "1" then
+        if game_map[start_x-1][start_y-1].los[1] == "1" or game_map[start_x-1][start_y-1].elevation > 0 then
             return start_x-1, start_y-1
         else
             return get_los_from_tile(start_x-1, start_y-1, direction)
@@ -162,7 +163,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_y==0 then
             return start_x, start_y
         end
-        if terrain_deck[start_x][start_y-1].los[2] == "1" then
+        if game_map[start_x][start_y-1].los[2] == "1" or game_map[start_x][start_y-1].elevation > 0then
             return start_x, start_y-1
         else
             return get_los_from_tile(start_x, start_y-1, direction)
@@ -171,7 +172,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_x==3 or start_y==0 then
             return start_x, start_y
         end
-        if terrain_deck[start_x+1][start_y-1].los[3] == "1" then
+        if game_map[start_x+1][start_y-1].los[3] == "1" or game_map[start_x+1][start_y-1].elevation > 0 then
             return start_x+1, start_y-1
         else
             return get_los_from_tile(start_x+1, start_y-1, direction)
@@ -180,7 +181,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_x==0 then
             return start_x, start_y
         end
-        if terrain_deck[start_x-1][start_y].los[4] == "1" then
+        if game_map[start_x-1][start_y].los[4] == "1" or game_map[start_x-1][start_y].elevation > 0 then
             return start_x-1, start_y
         else
             return get_los_from_tile(start_x-1, start_y, direction)
@@ -189,7 +190,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_x==3 then
             return start_x, start_y
         end
-        if terrain_deck[start_x+1][start_y].los[6] == "1" then
+        if game_map[start_x+1][start_y].los[6] == "1" or game_map[start_x+1][start_y].elevation > 0 then
             return start_x+1, start_y
         else
             return get_los_from_tile(start_x+1, start_y, direction)
@@ -198,7 +199,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_x == 0 or start_y==3 then
             return start_x, start_y
         end
-        if terrain_deck[start_x-1][start_y+1].los[7] == "1" then
+        if game_map[start_x-1][start_y+1].los[7] == "1" or game_map[start_x-1][start_y+1].elevation > 0 then
             return start_x-1, start_y+1
         else
             return get_los_from_tile(start_x-1, start_y+1, direction)
@@ -207,7 +208,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_y==3 then
             return start_x, start_y
         end
-        if terrain_deck[start_x][start_y+1].los[8] == "1" then
+        if game_map[start_x][start_y+1].los[8] == "1" or game_map[start_x][start_y+1].elevation > 0 then
             return start_x, start_y+1
         else
             return get_los_from_tile(start_x, start_y+1, direction)
@@ -216,7 +217,7 @@ function get_los_from_tile(start_x, start_y, direction)
         if start_x==3 or start_y==3 then
             return start_x, start_y
         end
-        if terrain_deck[start_x+1][start_y+1].los[9] == "1" then
+        if game_map[start_x+1][start_y+1].los[9] == "1" or game_map[start_x+1][start_y+1].elevation > 0 then
             return start_x+1, start_y+1
         else
             return get_los_from_tile(start_x+1, start_y+1, direction)
@@ -225,43 +226,52 @@ function get_los_from_tile(start_x, start_y, direction)
 end
 
 function setup_test_mission()
+    load_terrain()
     for i=0,3 do
-        terrain_deck[i] = {}
+        game_map[i] = {}
         for j=0,3 do
-            terrain_deck[i][j] = make_terrain_card()
+            local random_card = rnd(terrain_cards)
+            del(terrain_cards, random_card)
+            -- check if its a hill or not
+            if random_card.name == "hill" then
+                random_card = rnd(terrain_cards)
+                del(terrain_cards, random_card)
+                random_card.elevation+=1
+            end
+            game_map[i][j] = random_card
         end
     end
     -- set staging area
     for i=0,3 do
-        terrain_deck[i][3].is_staging_area = true
-        terrain_deck[i][3].revealed = true
-        terrain_deck[i][3].los= '000000000'
+        game_map[i][3].is_staging_area = true
+        game_map[i][3].revealed = true
+        game_map[i][3].los= '000000000'
     end
     for i=0,3 do
-        terrain_deck[i][2].revealed = true
+        game_map[i][2].revealed = true
     end
     update_terrain_revealed()
-    load_terrain(card_list)
 
     -- set potential contact
     contacts={"c","b","a"}
     for i=0,3 do
         for j=0,2 do
-            add(terrain_deck[i][j].units,make_unit(contacts[j+1],"potential contact "..contacts[j+1], "-1", "short",0,1))
+            add(game_map[i][j].units,make_unit(contacts[j+1],"potential contact "..contacts[j+1], "-1", "short",0,1))
         end
     end
 
     -- set starting player units    
-    add(terrain_deck[0][3].units, make_unit("1a","1st squad", "-1", "short",3,0))
-    add(terrain_deck[0][3].units, make_unit("2a","2nd squad", "-1", "short",3,0))
-    add(terrain_deck[0][3].units, make_unit("3a","3rd squad", "-1", "short",3,0))
+    add(game_map[0][3].units, make_unit("ha","hq a platoon", "-1", "short",1,0))
+    add(game_map[0][3].units, make_unit("1a","1st a squad", "-1", "short",3,0))
+    add(game_map[0][3].units, make_unit("2a","2nd a squad", "-1", "short",3,0))
+    add(game_map[0][3].units, make_unit("3a","3rd a squad", "-1", "short",3,0))    
 end
 
 function popup_update_view_tile_contents(self)
     if input.O then
         self.visible = false
     end
-    self.tile = terrain_deck[selected_terrain.x][selected_terrain.y]
+    self.tile = game_map[selected_terrain.x][selected_terrain.y]
     if input.LEFT or input.UP then 
         selected_unit -= 1 
         if selected_unit < 1 then selected_unit = #self.tile.units end
@@ -315,8 +325,8 @@ function popup_draw_view_unit_details(self)
     obscure_behind()
     rectfill(16, 16, 112, 112, 0)
     rect(16, 16, 112, 112, 7)
-    if #terrain_deck[selected_terrain.x][selected_terrain.y].units > 0 then
-        local unit = terrain_deck[selected_terrain.x][selected_terrain.y].units[selected_unit]
+    if #game_map[selected_terrain.x][selected_terrain.y].units > 0 then
+        local unit = game_map[selected_terrain.x][selected_terrain.y].units[selected_unit]
         print_c("unit details:", 64, 28, 7)
         print("name: "..unit.name, 20, 52, 7)
         print("vof: "..unit.vof, 20, 64, 7)

@@ -8,6 +8,7 @@ function make_unit(icon_text, name, vof, range, health, faction)
     unit.health = health or 0 
     unit.special_abilities = {}
     unit.is_selected = false
+    unit.in_cover = false
     unit.draw = function(self, x, y)
         -- Units should be 12x12
         rect(x,y,x+11,y+11,unit.faction == 0 and 11 or 8)
