@@ -47,7 +47,7 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
         -- fill terrain
         if self.is_staging_area then
            fillp(0x7ebd)
-           rectfill(x, y, x+30, y+30, 3)
+           rectfill(x, y, x+30, y+30, 1)
            fillp()
            rect(x, y, x+31, y+31, 0)
         else
@@ -56,9 +56,34 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
         end
         
         -- Draw units
+        clip(x+1, y+1, 29, 29)
         for i=1, #self.units do
-            self.units[i]:draw(x+3, y+3 + 10*(i-1))
+            self.units[i]:draw(x+3, y+3 + 12*(i-1))
         end
+        clip()
     end
     return card
 end
+
+function load_terrain(data_string)
+    local data=split(data_string, "^")
+    for card in all(data) do
+        logger.log("Loading terrain card: "..card)
+        local params=split(card, "|")
+        -- params: number|name|defence|los|cover_type|cover_locations
+        local num_cards = tonum(params[1])
+        -- params: number|name|defence|los|cover_type|cover_locations
+        for i=1, num_cards do
+            local terrain_card = make_terrain_card(
+                params[1],
+                tonum(params[2]),
+                params[5],
+                tonum(params[6]),
+                params[3]
+            )
+            add(state.map.terrain_deck, terrain_card)
+        end
+    end
+end
+
+card_list="4|open field|0|000000000|soft|2^6|hill|0|111111111|none|0^11|grove|1|111111111|soft|3^1|hedgerow|2|000000000|soft|2^4|hedgerow|2|111000111|soft|2^4|hedgerow|2|101101101|soft|2^2|hedgerow|2|111000000|soft|2^2|hedgerow|2|111001001|soft|2^2|hedgerow|2|111110100|soft|2^2|hedgerow|2|111001001|soft|2^15|farm|2|111111111|hard|1^3|village|3|111111111|hard|3"

@@ -2,7 +2,7 @@ state={}
 current_state=nil
 
 function _init()
-    current_state=state.main_menu
+    current_state=state.map
     current_state:init()
     logger.init()
 end

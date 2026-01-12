@@ -1,13 +1,11 @@
 state.map={
 
     popups={},
-    selected_unit=1,
-
     init=function(self)
         music(-1)
-        terrain_deck = {}
         selected_terrain={x=0, y=0} 
-        selected_unit=1 -- default to the first unit in the tile
+        terrain_deck = {}
+        selected_unit=1
         setup_test_mission()
 
         show_los = false
@@ -93,7 +91,7 @@ state.map={
         if camera_focused then
             camera_dest.x = (selected_terrain.x * 32)-4
             camera_dest.y = (selected_terrain.y * 32)-4
-        else
+        elsez
             camera_dest.x = 0
             camera_dest.y = 0
         end
@@ -108,7 +106,7 @@ state.map={
         camera(cam.x, cam.y)
         for i=0,3 do
             for j=0,3 do
-                terrain_deck[i][j]:draw(32 * (i), 32 * (j))
+                terrain_deck[i][j]:draw(32 *i, 32 * j)
             end
         end
         if show_los then
@@ -243,18 +241,20 @@ function setup_test_mission()
         terrain_deck[i][2].revealed = true
     end
     update_terrain_revealed()
+    load_terrain(card_list)
 
     -- set potential contact
     contacts={"c","b","a"}
     for i=0,3 do
         for j=0,2 do
-            add(terrain_deck[i][j].units,make_unit(contacts[j+1],"potential contact "..contacts[j+1], "-1", "short",3,1))
+            add(terrain_deck[i][j].units,make_unit(contacts[j+1],"potential contact "..contacts[j+1], "-1", "short",0,1))
         end
     end
 
     -- set starting player units    
-    add(terrain_deck[0][3].units, make_unit("s1","squad a1", "-1", "short",3,0))
-    add(terrain_deck[0][3].units, make_unit("s2","squad a2", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("1a","1st squad", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("2a","2nd squad", "-1", "short",3,0))
+    add(terrain_deck[0][3].units, make_unit("3a","3rd squad", "-1", "short",3,0))
 end
 
 function popup_update_view_tile_contents(self)
@@ -263,16 +263,16 @@ function popup_update_view_tile_contents(self)
     end
     self.tile = terrain_deck[selected_terrain.x][selected_terrain.y]
     if input.LEFT or input.UP then 
-        state.map.selected_unit -= 1 
-        if state.map.selected_unit < 1 then state.map.selected_unit = #self.tile.units end
+        selected_unit -= 1 
+        if selected_unit < 1 then selected_unit = #self.tile.units end
     end
     if input.RIGHT or input.DOWN then
-        state.map.selected_unit += 1
-        if state.map.selected_unit > #self.tile.units then state.map.selected_unit = 1 end
+        selected_unit += 1
+        if selected_unit > #self.tile.units then selected_unit = 1 end
     end
     if #self.tile.units > 0 then
         for i=1, #self.tile.units do
-            self.tile.units[i].is_selected = (i == state.map.selected_unit)
+            self.tile.units[i].is_selected = (i == selected_unit)
         end
     end
     if input.X then
@@ -281,7 +281,7 @@ function popup_update_view_tile_contents(self)
         view_unit_popup.update = popup_update_view_unit_details
         view_unit_popup.draw = popup_draw_view_unit_details
         state.map:add_popup(view_unit_popup)
-        logger.log("viewing unit details for unit: "..self.tile.units[state.map.selected_unit].name)
+        logger.log("viewing unit details for unit: "..self.tile.units[selected_unit].name)
         logger.log("total popups: "..#state.map.popups)
     end
 end
@@ -316,7 +316,7 @@ function popup_draw_view_unit_details(self)
     rectfill(16, 16, 112, 112, 0)
     rect(16, 16, 112, 112, 7)
     if #terrain_deck[selected_terrain.x][selected_terrain.y].units > 0 then
-        local unit = terrain_deck[selected_terrain.x][selected_terrain.y].units[state.map.selected_unit]
+        local unit = terrain_deck[selected_terrain.x][selected_terrain.y].units[selected_unit]
         print_c("unit details:", 64, 28, 7)
         print("name: "..unit.name, 20, 52, 7)
         print("vof: "..unit.vof, 20, 64, 7)
