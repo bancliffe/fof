@@ -56,7 +56,7 @@ function make_terrain_card(name, defence, cover_type, cover_locations, los)
         end
         
         -- Draw units
-        clip(x+1, y+1, 29, 29)
+        clip(x+1-cam.x, y+1-cam.y, 29, 29)
         for i=1, #self.units do
             self.units[i]:draw(x+3, y+3 + 12*(i-1))
         end

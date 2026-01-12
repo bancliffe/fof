@@ -91,7 +91,7 @@ state.map={
         if camera_focused then
             camera_dest.x = (selected_terrain.x * 32)-4
             camera_dest.y = (selected_terrain.y * 32)-4
-        elsez
+        else
             camera_dest.x = 0
             camera_dest.y = 0
         end
