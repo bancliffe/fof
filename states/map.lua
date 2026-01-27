@@ -1,5 +1,4 @@
 state.map={
-
     popups={},
     init=function(self)
         music(-1)
@@ -13,6 +12,9 @@ state.map={
         camera_focused = false
         camera_dest={x=0,y=0}
         cam={x=0,y=0}
+
+        game_phases = {"hq events","defense mission: enemy activation", "command phase", "activation segment", "initiative segment","offense mission: enemy activation","capture & retreat", "at combat & vehicle movement", "combat phase","cleanup"}
+        current_game_phase = 1
                 
         menuitem(1, "generate mission", setup_test_mission)
         menuitem(2, "show los: OFF",
@@ -25,6 +27,7 @@ state.map={
     end,
 
     update=function(self)
+        -- TODO: Make this whole function replacable by expected update functions
         input:update()
         if #self.popups > 0 then
             local popup = self.popups[#self.popups]
@@ -35,67 +38,12 @@ state.map={
             return
         end
 
-        if not camera_focused then
-            if input.LEFT then selected_terrain.x = (selected_terrain.x - 1) % 4 end
-            if input.RIGHT then selected_terrain.x = (selected_terrain.x + 1) % 4 end
-            if input.UP then selected_terrain.y = (selected_terrain.y - 1) % 4 end
-            if input.DOWN then selected_terrain.y = (selected_terrain.y + 1) % 4 end
-        else
-            if input.LEFT or input.UP then 
-                selected_unit -= 1 
-                if selected_unit < 1 then selected_unit = #game_map[selected_terrain.x][selected_terrain.y].units end
-            end
-            if input.RIGHT or input.DOWN then 
-                selected_unit += 1 
-                if selected_unit > #game_map[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
-            end
-            for i=1, #game_map[selected_terrain.x][selected_terrain.y].units do
-                game_map[selected_terrain.x][selected_terrain.y].units[i].is_selected = (i == selected_unit)
-            end
-        end
-
-        if input.O then 
-            if not camera_focused then
-                local popup = make_popup("return to main menu?", 2, 2, 124, 36, true)
-                add(self.popups, popup)
-            else
-                camera_focused = false
-                local tile = game_map[selected_terrain.x][selected_terrain.y]
-                if #tile.units >0 then
-                    game_map[selected_terrain.x][selected_terrain.y].units[selected_unit].is_selected = false
-                    selected_unit = 1
-                end
-            end
-            selected_unit = 1
-        end
-
-        if input.X then 
-            if not camera_focused and #self.popups == 0 then
-                camera_focused = true
-                local tile = game_map[selected_terrain.x][selected_terrain.y]
-                if #tile.units > 0 then
-                   tile.units[selected_unit].is_selected=true
-                end
-            else
-                popup_tile_contents = make_popup("view tile contents", 2, 2, 124, 124, true)
-                popup_tile_contents.update = popup_update_view_tile_contents
-                popup_tile_contents.draw = popup_draw_view_tile_contents
-                add(self.popups, popup_tile_contents)
-            end
-        end
-
-        if input.L1 then
-            show_los = not show_los
-            menuitem(nil, "show los: "..(show_los and "ON" or "OFF"))
-        end
-
         if camera_focused then
-            camera_dest.x = (selected_terrain.x * 32)-4
-            camera_dest.y = (selected_terrain.y * 32)-4
+            update_tile_focused()
         else
-            camera_dest.x = 0
-            camera_dest.y = 0
+            update_default_map()
         end
+
         cam.x=lerp(cam.x,camera_dest.x,0.25)
         cam.y=lerp(cam.y,camera_dest.y,0.25)   
         if cam.x > 0 and cam.x < 0.1 or cam.x < 0 and cam.x > -0.1 then cam.x=0 end
@@ -146,6 +94,73 @@ function update_terrain_revealed()
             end
         end
     end
+end
+
+function update_tile_focused()
+    if input.LEFT or input.UP then 
+        selected_unit -= 1 
+        if selected_unit < 1 then selected_unit = #game_map[selected_terrain.x][selected_terrain.y].units end
+    end
+    if input.RIGHT or input.DOWN then 
+        selected_unit += 1 
+        if selected_unit > #game_map[selected_terrain.x][selected_terrain.y].units then selected_unit = 1 end
+    end
+    for i=1, #game_map[selected_terrain.x][selected_terrain.y].units do
+        game_map[selected_terrain.x][selected_terrain.y].units[i].is_selected = (i == selected_unit)
+    end
+
+    if input.O then 
+        camera_focused = false
+        local tile = game_map[selected_terrain.x][selected_terrain.y]
+        if #tile.units >0 then
+            game_map[selected_terrain.x][selected_terrain.y].units[selected_unit].is_selected = false
+            selected_unit = 1
+        end
+        selected_unit = 1
+    end
+
+    if input.X then 
+        if #state.map.popups == 0 then
+            popup_tile_contents = make_popup("view tile contents", 2, 2, 124, 124, true)
+            popup_tile_contents.update = popup_update_view_tile_contents
+            popup_tile_contents.draw = popup_draw_view_tile_contents
+            add(state.map.popups, popup_tile_contents)
+        end
+    end
+
+    camera_dest.x = (selected_terrain.x * 32)-4
+    camera_dest.y = (selected_terrain.y * 32)-4
+end
+
+function draw_tile_focused()
+end
+
+function update_default_map()
+    if input.LEFT then selected_terrain.x = (selected_terrain.x - 1) % 4 end
+    if input.RIGHT then selected_terrain.x = (selected_terrain.x + 1) % 4 end
+    if input.UP then selected_terrain.y = (selected_terrain.y - 1) % 4 end
+    if input.DOWN then selected_terrain.y = (selected_terrain.y + 1) % 4 end
+
+    if input.O then 
+        local popup = make_popup("return to main menu?", 2, 2, 124, 36, true)
+        add(state.map.popups, popup)
+        selected_unit = 1
+    end
+
+    if input.X then 
+        if #state.map.popups == 0 then
+            camera_focused = true
+            local tile = game_map[selected_terrain.x][selected_terrain.y]
+            if #tile.units > 0 then
+                tile.units[selected_unit].is_selected=true
+            end
+        end
+    end
+    camera_dest.x = 0
+    camera_dest.y = 0
+end
+
+function draw_default_map()
 end
 
 function get_los_from_tile(start_x, start_y, direction)
